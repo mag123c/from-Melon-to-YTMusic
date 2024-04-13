@@ -3,6 +3,7 @@ import { implicitWait, waitForKakaoSecondAuthentication, waitForNewWindow } from
 import { sendErrorMsg, sendProcessMsg } from './sendToClient.js';
 import { windowHandlesStack } from "./windowHandles.js";
 
+/** 로그인 - KAKAO / MELON */
 const login = async (driver, loginType, yourId, password) => {
     await driver.findElement({ className: "btn_login" }).click();
     await implicitWait(driver, 2000);
@@ -16,6 +17,8 @@ const login = async (driver, loginType, yourId, password) => {
     }
 }
 
+
+/** 카카오 로그인, 2차인증 반드시 필요 */
 const kakaoLogin = async (driver, yourId, password) => {
     try {
         await driver.findElement({ className: "btn_gate kakao" }).click();
@@ -44,6 +47,7 @@ const kakaoLogin = async (driver, yourId, password) => {
 
 }
 
+/** 멜론 로그인 */
 const melonLogin = async (driver, yourId, password) => {
     try {
         await driver.findElement({ className: "btn_gate melon" }).click();
@@ -59,6 +63,7 @@ const melonLogin = async (driver, yourId, password) => {
 
 }
 
+/** 로그인 후 팝업 제거 */
 const afterLoginPopupQuit = async (driver) => {
     try {
         await driver.sleep(500);
@@ -80,6 +85,7 @@ const afterLoginPopupQuit = async (driver) => {
 
 }
 
+/** 플레이리스트로 이동 */
 const goToPlayList = async (driver, playListNo) => {
     try {
         //마이페이지로 이동
@@ -121,40 +127,62 @@ const goToPlayList = async (driver, playListNo) => {
 
         //플레이리스트 클릭해서 이동 (플레이리스트는 한페이지 20개기준으로 제작되었습니다.)
         const playList = playListAll[(playListNo - 1) % 20];
-        await driver.sleep(500);
-        const tdElements = await playList.findElements({ tagName: 'td' });        
-        await tdElements[1].findElement({ tagName: 'a' }).click();        
+        await driver.sleep(1000);
+        const tdElements = await playList.findElements({ tagName: 'td' });
+        await tdElements[1].findElement({ tagName: 'a' }).click();
+
+        await implicitWait(driver, 2000)
     }
     catch (e) {
+        console.error(e);
         throw e;
     }
 
 }
 
+/** 플레이리스트 파싱 */
 const parsePlayList = async (driver) => {
-    try {
-        await implicitWait(driver, 2000);
+    // try {
 
+    let totalCnt = 0;
+    while (true) {
+        console.log('플레이리스트를 가져오는중입니다. 기다려주세요');
         const playList = [];
-        const trElements = await driver.findElements({ css: '#frm table tbody tr' });
+        const table = await driver.findElement(By.css('tbody'))
+        const trElems = await table.findElements(By.css('tr'));
 
-        for (let tr of trElements) {
-            const tdElements = await tr.findElements({ tagName: 'td' });
-            const title = await tdElements[2].getText();
-            const artist = await tdElements[3].getText();
+        for (let tr of trElems) {
+            const tdElems = await tr.findElements({ tagName: 'td' });
+            const title = await tdElems[2].findElement({ className: 'fc_gray' }).getText();
+            const artist = await tdElems[3].findElement({ className: 'fc_mgray' }).getText();
 
-            playList.push({ title, artist });
+            playList.push(`${artist}-${title}`);
+
+            sendProcessMsg(`${artist}-${title}`);
         }
 
-        return playList;
-    }
-    catch (e) {
-        throw new Error('플레이리스트 파싱 실패');
+        const lastBtn = await driver.findElement({ className: 'btn_last' });
+        totalCnt += playList.length;
+
+        if ((await lastBtn.getAttribute('class')).indexOf('disabled') > -1) {
+            sendProcessMsg(`플레이리스트 가져오기 완료 (총 ${totalCnt}곡)`);
+            return playList;
+        }
+
+        await driver.findElement(By.css('.page_num > strong + a')).click();
+        await driver.sleep(2000)
     }
 
-
+    // }
+    // catch (e) {
+    //     throw new Error('플레이리스트 가져오기 실패');
+    // }
 }
 
+/**
+ * 멜론 로그인 후 플레이리스트 가져오기
+ * @returns 멜론 플레이리스트
+ */
 export const melonActions = async (driver, loginType, yourId, password, playListNo) => {
     try {
         sendProcessMsg('멜론에 접속합니다.');
@@ -174,7 +202,6 @@ export const melonActions = async (driver, loginType, yourId, password, playList
 
         //플리로 이동
         await goToPlayList(driver, playListNo);
-        await implicitWait(driver, 2000);
 
         //플리 파싱해서 리턴
         return await parsePlayList(driver);
@@ -182,11 +209,7 @@ export const melonActions = async (driver, loginType, yourId, password, playList
     catch (e) {
         console.error(e);
         sendErrorMsg(e.message);
+        await driver.quit();
         throw e;
     }
-    finally {
-        driver.quit();
-    }
-
-    return playList;
 }

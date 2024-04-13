@@ -1,8 +1,9 @@
 import promptSync from 'prompt-sync';
-import { Browser, Builder } from "selenium-webdriver";
-import { melonActions } from "./app/melon.js";
-import { sendErrorMsg, sendProcessMsg } from './app/sendToClient.js';
-import { windowHandlesStack } from "./app/windowHandles.js";
+import { setupChromeDriver } from './app/driver.js';
+import { melonActions } from './app/melon.js';
+import { countDown, sendErrorMsg, sendProcessMsg } from './app/sendToClient.js';
+import { windowHandlesStack } from './app/windowHandles.js';
+import { ytMusicActions } from './app/ytMusic.js';
 
 //Your Login Type
 let loginType;
@@ -27,27 +28,23 @@ const run = async () => {
         sendProcessMsg(`[프로그램 메세지] ${loginType == 'kakao' ? '카카오' : '멜론'} 계정으로 시작합니다.`);
         sendProcessMsg('프로그램을 3초 후에 시작합니다.')
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        sendProcessMsg(3);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        sendProcessMsg(2);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        sendProcessMsg(1);
+        await countDown(3);
         //★★
 
 
-        let driver = await new Builder().forBrowser(Browser.CHROME).build();
-
-        //Initialize windowHandlesStack
+        // let driver = await new Builder().forBrowser(Browser.CHROME).build();
+        let driver = await setupChromeDriver();
         windowHandlesStack.init(driver);
 
-        const melonPlayList = await melonActions(driver, loginType, yourId, password, playListNo);
-        sendProcessMsg('플레이리스트 가져오기 완료');
+        await driver.sleep(2000);
 
-        await driver.quit();
-        sendProcessMsg('프로그램을 종료합니다.');
+        const melonPlayList = await melonActions(driver, loginType, yourId, password, playListNo);
+        const result = await ytMusicActions(driver, melonPlayList);
+
+        result ? sendProcessMsg('프로그램을 종료합니다.') : sendErrorMsg('플레이리스트를 재생목록으로 옮겨 작업을 완료해주세요.');
     }
     catch (e) {
+        console.error(e)
         sendErrorMsg('[에러 메세지] 에러가 발견되어 프로그램을 종료합니다. 관리자에게 문의해주세요.')
     }
 
