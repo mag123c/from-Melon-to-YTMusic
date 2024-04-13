@@ -43,7 +43,7 @@ export const setupChromeDriver = async () => {
 
 ## 사용 영상
 
-
+https://github.com/mag123c/from-Melon-to-YTMusic/assets/120711308/e18c42aa-5b1d-4823-a3d7-045ccb0eb029
 
 <br />
 
