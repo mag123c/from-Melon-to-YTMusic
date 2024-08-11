@@ -43,8 +43,12 @@ export const setupChromeDriver = async () => {
 ```
 
 
-## 사용 꿀팁
-멜론 플레이리스트 파싱용도로 사용하시고 [soundiiz](https://soundiiz.com/)에서 파싱된 플리를 csv포맷팅 하셔서 이용하시는게 더 편할 수도 있습니다. ([관련링크](https://earthconquest.tistory.com/429))
+
+
+## 플레이리스트를 옮기는 무료 툴
+soundiiz를 이용하는 것이 더 편리할 수 있습니다.
+
+각 음원 스트리밍 플랫폼의 플레이리스트를 [soundiiz](https://soundiiz.com/)에서 옮길 수 있습니다. (과금여부는 잘 모르겠습니다.) ([관련링크](https://earthconquest.tistory.com/429))
 
 <br />
 
