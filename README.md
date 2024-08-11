@@ -46,9 +46,9 @@ export const setupChromeDriver = async () => {
 
 
 ## 플레이리스트를 옮기는 무료 툴
-soundiiz를 이용하는 것이 더 편리할 수 있습니다.
+[soundiiz](https://soundiiz.com/)를 이용하는 것이 더 편리할 수 있습니다.
 
-각 음원 스트리밍 플랫폼의 플레이리스트를 [soundiiz](https://soundiiz.com/)에서 옮길 수 있습니다. (과금여부는 잘 모르겠습니다.) ([관련링크](https://earthconquest.tistory.com/429))
+(과금여부는 잘 모르겠습니다.) ([관련링크](https://earthconquest.tistory.com/429))
 
 <br />
 
